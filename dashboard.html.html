@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Car Dashboard</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    button { width: 120px; height: 50px; margin: 5px; font-size: 18px; }
+    input[type=text] { width: 200px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Smart Car Dashboard</h1>
+
+  <!-- Remote control -->
+  <h2>Remote Control</h2>
+  <button onclick="sendDirection('FORWARD')">Forward</button><br>
+  <button onclick="sendDirection('LEFT')">Left</button>
+  <button onclick="sendDirection('STOP')">Stop</button>
+  <button onclick="sendDirection('RIGHT')">Right</button><br>
+  <button onclick="sendDirection('BACKWARD')">Backward</button>
+
+  <!-- Mode selection -->
+  <h2>Mode</h2>
+  <select id="modeSelect" onchange="sendMode()">
+    <option value="REMOTE">REMOTE</option>
+    <option value="LINE">LINE</option>
+    <option value="AUTO">AUTO</option>
+  </select>
+
+  <!-- LCD input -->
+  <h2>LCD Display</h2>
+  <input type="text" id="lcdInput" maxlength="20" placeholder="Max 20 characters">
+  <button onclick="sendLCD()">Send</button>
+
+  <script>
+    // ---------------- MQTT Setup ----------------
+    const broker = 'wss://broker.hivemq.com:8884/mqtt'; // HiveMQ WebSocket broker
+    const clientId = 'web_' + Math.random().toString(16).substr(2,8);
+    const client = mqtt.connect(broker, { clientId: clientId });
+
+    client.on('connect', function () {
+      console.log('Connected to MQTT broker');
+    });
+
+    client.on('error', function (err) {
+      console.error('Connection failed:', err);
+    });
+
+    // ---------------- Send Commands ----------------
+    function sendDirection(dir) {
+      client.publish('car/control/direction', dir);
+    }
+
+    function sendMode() {
+      const mode = document.getElementById('modeSelect').value;
+      client.publish('car/control/mode', mode);
+    }
+
+    function sendLCD() {
+      let msg = document.getElementById('lcdInput').value;
+      if (msg.length > 20) msg = msg.substring(0,20);
+      client.publish('car/lcd/message', msg);
+    }
+  </script>
+</body>
+</html>
