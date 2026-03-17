@@ -60,7 +60,7 @@
 
     function sendLCD() {
       let msg = document.getElementById('lcdInput').value;
-      if (msg.length > 20) msg = msg.substring(0,20);
+      if (msg.length > 40) msg = msg.substring(0,40);
       client.publish('car/lcd/message', msg);
     }
   </script>
